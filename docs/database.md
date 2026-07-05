@@ -70,6 +70,7 @@ se vuelva costoso computacionalmente.
 - role (enum: buy, sell, manufacture, distribute, represent, invest)
 - volume_target (numeric)
 - unit (text)
+- country_target (text)
 - created_at (timestamp)
 
 ## search_jobs
