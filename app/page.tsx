@@ -1,17 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createSearch, type CreateSearchResult } from '@/lib/actions/create-search'
+import { getRecentSearches, type SearchListItem } from '@/lib/actions/get-searches'
 
 export default function Home() {
   const [result, setResult] = useState<CreateSearchResult | null>(null)
   const [loading, setLoading] = useState(false)
+const [searches, setSearches] = useState<SearchListItem[]>([])
+
+  async function loadSearches() {
+    const list = await getRecentSearches()
+    setSearches(list)
+  }
+
+  useEffect(() => {
+    loadSearches()
+  }, [])
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
     const res = await createSearch(formData)
     setResult(res)
     setLoading(false)
+    if (res.success) {
+      await loadSearches()
+    }
   }
 
   return (
@@ -73,6 +87,22 @@ export default function Home() {
           )}
         </div>
       )}
+
+      <div className="mt-10 w-full max-w-md">
+        <h2 className="text-lg font-semibold mb-3">Búsquedas recientes</h2>
+        {searches.length === 0 ? (
+          <p className="text-gray-500 text-sm">Todavía no hay búsquedas.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {searches.map((s) => (
+              <li key={s.id} className="border border-gray-800 rounded p-3 text-sm flex justify-between">
+                <span>{s.role === 'buy' ? 'Comprar' : 'Vender'} {s.productName} en {s.country}{s.volume ? ` (${s.volume})` : ''}</span>
+                <span className="text-gray-500">{s.status}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </main>
   )
 }
